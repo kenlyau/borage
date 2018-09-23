@@ -1,7 +1,11 @@
 package borage
 
+import (
+	"net/http"
+)
+
 type Borage struct {
 	router          *Router
-	notFoundHandler HandlerFunc
+	notFoundHandler http.HandlerFunc
 	Debug           bool
 }
