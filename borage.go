@@ -29,3 +29,19 @@ func (b *Borage) Handle(method, path string, handle http.HandlerFunc) {
 func (b *Borage) GET(path string, handle http.HandlerFunc) {
 	b.Handle("GET", path, handle)
 }
+
+func (b *Borage) POST(path string, handle http.HandlerFunc) {
+	b.Handle("POST", path, handle)
+}
+
+func (b *Borage) PUT(path string, handle http.HandlerFunc) {
+	b.Handle("PUT", path, handle)
+}
+
+func (b *Borage) DELETE(path string, handle http.HandlerFunc) {
+	b.Handle("DELETE", path, handle)
+}
+
+func (b *Borage) Start(addr string) {
+
+}

@@ -32,6 +32,7 @@ func (n *Node) addNode(method, path string, handler http.HandlerFunc) {
 		}
 		if len(componets) == 1 {
 			curNode.methods[method] = handler
+			break
 		}
 		componets = componets[1:]
 		component = componets[0]
