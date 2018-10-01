@@ -50,5 +50,5 @@ func (b *Borage) DELETE(path string, handle http.HandlerFunc) {
 
 func (b *Borage) Start(addr string) {
 	server := &Server{}
-	http.ListenAndServe(":8080", server)
+	http.ListenAndServe(addr, server)
 }
