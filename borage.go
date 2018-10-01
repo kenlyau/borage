@@ -10,6 +10,12 @@ type Borage struct {
 	notFoundHandler http.HandlerFunc
 	Debug           bool
 }
+type Server struct{}
+
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(200)
+	w.Write([]byte(r.URL.Path))
+}
 
 // New func return Borage
 func New() *Borage {
@@ -43,5 +49,6 @@ func (b *Borage) DELETE(path string, handle http.HandlerFunc) {
 }
 
 func (b *Borage) Start(addr string) {
-
+	server := &Server{}
+	http.ListenAndServe(":8080", server)
 }
