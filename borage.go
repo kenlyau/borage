@@ -7,14 +7,21 @@ import (
 // Borage struct
 type Borage struct {
 	router          *Router
+	server          *Server
 	notFoundHandler http.HandlerFunc
 	Debug           bool
 }
-type Server struct{}
+type Server struct {
+	borage *Borage
+}
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(200)
-	w.Write([]byte(r.URL.Path))
+	path := r.URL.Path
+	tree := s.borage.router.tree
+	node := tree.searchNode(r.Method, path)
+	if node != nil {
+		node.methods[r.Method](w, r)
+	}
 }
 
 // New func return Borage
@@ -22,6 +29,8 @@ func New() *Borage {
 	b := &Borage{}
 	b.router = NewRouter(b)
 	b.Debug = true
+	server := &Server{borage: b}
+	b.server = server
 	return b
 }
 
@@ -49,6 +58,5 @@ func (b *Borage) DELETE(path string, handle http.HandlerFunc) {
 }
 
 func (b *Borage) Start(addr string) {
-	server := &Server{}
-	http.ListenAndServe(addr, server)
+	http.ListenAndServe(addr, b.server)
 }
