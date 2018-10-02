@@ -21,7 +21,9 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	node := tree.searchNode(r.Method, path)
 	if node != nil {
 		node.methods[r.Method](w, r)
+		return
 	}
+	s.borage.notFoundHandler(w, r)
 }
 
 // New func return Borage
@@ -31,6 +33,10 @@ func New() *Borage {
 	b.Debug = true
 	server := &Server{borage: b}
 	b.server = server
+	b.notFoundHandler = func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(404)
+		w.Write([]byte("404 not found"))
+	}
 	return b
 }
 
