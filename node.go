@@ -2,34 +2,44 @@ package borage
 
 import (
 	"net/http"
+	"net/url"
 	"strings"
 )
 
 // Node struct
 type Node struct {
 	component string
-	children  map[string]*Node
+	children  []*Node
 	methods   map[string]http.HandlerFunc
-	isParamed bool
+	isParam   bool
 }
 
 func (n *Node) addNode(method, path string, handler http.HandlerFunc) {
 	componets := strings.Split(path, "/")[1:]
 	component := componets[0]
 	curNode := n
-	for len(componets) > 0 {
-		if curNode.children[component] != nil {
-			curNode = curNode.children[component]
-		} else {
-			newNode := &Node{
-				component: component,
-				children:  make(map[string]*Node),
-				methods:   make(map[string]http.HandlerFunc),
-				isParamed: false,
+	aNode := n
+	for {
+		aNode = nil
+		for _, child := range curNode.children {
+			if child.component == component {
+				aNode = child
+				break
 			}
-			curNode.children[component] = newNode
-			curNode = curNode.children[component]
 		}
+		if aNode == nil {
+			aNode = &Node{
+				component: component,
+				children:  make([]*Node, 0),
+				methods:   make(map[string]http.HandlerFunc),
+				isParam:   false,
+			}
+			if component[0] == ':' {
+				aNode.isParam = true
+			}
+			curNode.children = append(curNode.children, aNode)
+		}
+		curNode = aNode
 		if len(componets) == 1 {
 			curNode.methods[method] = handler
 			break
@@ -39,13 +49,19 @@ func (n *Node) addNode(method, path string, handler http.HandlerFunc) {
 	}
 }
 
-func (n *Node) searchNode(method, path string) *Node {
+func (n *Node) searchNode(path string, params url.Values) *Node {
 	components := strings.Split(path, "/")[1:]
 	component := components[0]
 	curNode := n
-	for len(components) > 0 {
-		if curNode.children[component] != nil {
-			curNode = curNode.children[component]
+	for {
+		for _, child := range curNode.children {
+			if child.component == component || child.isParam {
+				if child.isParam && params != nil {
+					params.Add(child.component[1:], component)
+				}
+				curNode = child
+				break
+			}
 		}
 		if len(components) == 1 {
 			break
@@ -53,8 +69,5 @@ func (n *Node) searchNode(method, path string) *Node {
 		components = components[1:]
 		component = components[0]
 	}
-	if curNode.component == component {
-		return curNode
-	}
-	return nil
+	return curNode
 }

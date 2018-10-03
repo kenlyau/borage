@@ -16,10 +16,11 @@ type Server struct {
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	r.ParseMultipartForm(10 * 1024 * 1024)
 	path := r.URL.Path
 	tree := s.borage.router.tree
-	node := tree.searchNode(r.Method, path)
-	if node != nil {
+	node := tree.searchNode(path, r.Form)
+	if node != nil && node.methods[r.Method] != nil {
 		node.methods[r.Method](w, r)
 		return
 	}
@@ -38,6 +39,10 @@ func New() *Borage {
 		w.Write([]byte("404 not found"))
 	}
 	return b
+}
+
+func (b *Borage) SetNotFound(handle http.HandlerFunc) {
+	b.notFoundHandler = handle
 }
 
 func (b *Borage) Handle(method, path string, handle http.HandlerFunc) {

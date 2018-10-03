@@ -11,7 +11,7 @@ type Router struct {
 func NewRouter(b *Borage) *Router {
 	node := &Node{
 		component: "",
-		children:  make(map[string]*Node),
+		children:  make([]*Node, 0),
 		methods:   make(map[string]http.HandlerFunc),
 	}
 	return &Router{
